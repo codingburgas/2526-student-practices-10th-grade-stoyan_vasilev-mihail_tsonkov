@@ -1,4 +1,9 @@
 #pragma once
 #include "precompile.h"
 
-int mainMenu();
+int window();
+
+enum ScreenState
+{
+    SCREEN_MENU = 0
+};

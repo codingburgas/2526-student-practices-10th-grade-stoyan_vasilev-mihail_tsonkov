@@ -127,10 +127,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="CinemaLibrary.cpp" />
+    <ClCompile Include="source\CinemaLibrary.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="CinemaLibrary.h" />
+    <ClInclude Include="header\CinemaLibrary.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

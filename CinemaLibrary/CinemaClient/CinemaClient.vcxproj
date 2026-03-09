@@ -131,7 +131,8 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="main.cpp" />
+    <ClCompile Include="source\main.cpp" />
+    <ClCompile Include="source\menu.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\CinemaLibrary\CinemaLibrary.vcxproj">
@@ -140,6 +141,10 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="header\menu.h" />
+    <ClInclude Include="header\precompile.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
