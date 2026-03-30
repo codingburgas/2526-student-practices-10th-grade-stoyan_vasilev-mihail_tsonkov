@@ -5,10 +5,11 @@
     <ClCompile Include="source\menu.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
     <ClInclude Include="header\precompile.h" />
     <ClInclude Include="header\menu.h" />
+    <ClInclude Include="..\packages\raylib.5.5.0\build\native\include\raylib.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
 </Project>
