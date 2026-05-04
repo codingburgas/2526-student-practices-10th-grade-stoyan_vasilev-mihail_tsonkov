@@ -133,12 +133,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="Auth.cpp" />
+    <ClCompile Include="source\Auth.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\menu.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="Auth.h" />
+    <ClInclude Include="header\Auth.h" />
     <ClInclude Include="header\menu.h" />
     <ClInclude Include="header\precompile.h" />
   </ItemGroup>

@@ -3,11 +3,11 @@
   <ItemGroup>
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\menu.cpp" />
-    <ClCompile Include="Auth.cpp" />
+    <ClCompile Include="source\Auth.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\precompile.h" />
     <ClInclude Include="header\menu.h" />
-    <ClInclude Include="Auth.h" />
+    <ClInclude Include="header\Auth.h" />
   </ItemGroup>
 </Project>

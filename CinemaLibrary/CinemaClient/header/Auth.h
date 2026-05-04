@@ -1,6 +1,6 @@
 #pragma once
-#include "header/menu.h"
-#include "header/precompile.h"
+#include "../header/menu.h"
+#include "../header/precompile.h"
 
 
 void DrawLoginScreen(bool darkMode, char* username, char* password, bool& userActive, bool& passActive, float& cursorBlink, ScreenState& currentScreen, bool& isLoggedIn, char* currentUser);

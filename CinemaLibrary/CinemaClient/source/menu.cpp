@@ -1,5 +1,5 @@
 #include "../header/menu.h"
-#include "../Auth.h"
+#include "../header/Auth.h"
 
 int window()
 {

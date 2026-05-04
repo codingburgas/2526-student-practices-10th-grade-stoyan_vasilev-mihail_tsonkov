@@ -1,5 +1,5 @@
 #define _CRT_SECURE_NO_WARNINGS
-#include "Auth.h"
+#include "../header/Auth.h"
 
 void HandleTextInput(char* text, int maxLen, bool active)
 {
