@@ -3,13 +3,11 @@
   <ItemGroup>
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\menu.cpp" />
+    <ClCompile Include="Auth.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="header\precompile.h" />
     <ClInclude Include="header\menu.h" />
-    <ClInclude Include="..\packages\raylib.5.5.0\build\native\include\raylib.h" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
+    <ClInclude Include="Auth.h" />
   </ItemGroup>
 </Project>
