@@ -105,7 +105,7 @@ void DrawLoginScreen(bool darkMode, char* username, char* password, bool& userAc
                 {
                     isLoggedIn = true;
                     strcpy(currentUser, username);
-                    currentScreen = SCREEN_MENU;
+                    currentScreen = SCREEN_HOME;
                     errorCode = 0;
                 }
                 else
