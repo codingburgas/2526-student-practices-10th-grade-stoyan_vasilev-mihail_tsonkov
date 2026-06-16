@@ -46,12 +46,7 @@ void DrawHomeScreen(bool darkMode)
     DrawText("<", 272, 108, 25, textColor);
     DrawText(">", 712, 108, 25, textColor);
 
-    DrawText(
-        dates[selectedDay],
-        400,
-        108,
-        25,
-        textColor);
+    DrawText(dates[selectedDay], 400, 108, 25, textColor);
 
     int y = 200;
 
@@ -107,10 +102,12 @@ void DrawHomeScreen(bool darkMode)
     }
 
     Rectangle backBtn = { 20,20,100,40 };
+    Rectangle logoutBtn = { 20, 70, 100, 40 };
 
     DrawRectangleRec(backBtn, boxColor);
     DrawRectangleLinesEx(backBtn, 2, GRAY);
     DrawText("Back", 45, 30, 20, textColor);
+
 }
 
 int window()
@@ -148,6 +145,7 @@ int window()
     bool darkMode = false;
 
     Rectangle loginBtn = { 20.0f, 20.0f, 100.0f, 40.0f };
+    Rectangle logoutBtn = { 20.0f, 70.0f, 100.0f, 40.0f };
 
     while (!WindowShouldClose())
     {
@@ -161,6 +159,14 @@ int window()
             {
                 currentScreen = SCREEN_LOGIN;
             }
+            if (isLoggedIn &&
+                CheckCollisionPointRec(mouse, logoutBtn) &&
+                IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                isLoggedIn = false;
+                currentUser[0] = '\0';
+                currentScreen = SCREEN_MENU;
+            }
         }
         else if (currentScreen == SCREEN_LOGIN ||
             currentScreen == SCREEN_REGISTER)
@@ -173,10 +179,24 @@ int window()
         else if (currentScreen == SCREEN_HOME)
         {
             Rectangle backBtn = { 20,20,100,40 };
+            Rectangle logoutBtn = { 850,20,120,40 };
 
             if (CheckCollisionPointRec(mouse, backBtn) &&
                 IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
+                currentScreen = SCREEN_MENU;
+            }
+
+            if (CheckCollisionPointRec(mouse, logoutBtn) &&
+                IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                isLoggedIn = false;
+
+                currentUser[0] = '\0';
+
+                loginUser[0] = '\0';
+                loginPass[0] = '\0';
+
                 currentScreen = SCREEN_MENU;
             }
         }
@@ -203,10 +223,9 @@ int window()
                 DrawRectangleRec(loginBtn, boxColor);
                 DrawRectangleLinesEx(loginBtn, 2, GRAY);
 
-                DrawText(
-                    "Login",
-                    (int)loginBtn.x + 25,
-                    (int)loginBtn.y + 10,
+                DrawText("Login",
+                    loginBtn.x + 25,
+                    loginBtn.y + 10,
                     20,
                     textColor);
             }
@@ -216,6 +235,17 @@ int window()
                     TextFormat("Welcome, %s", currentUser),
                     20,
                     20,
+                    20,
+                    textColor);
+            }
+            if (isLoggedIn)
+            {
+                DrawRectangleRec(logoutBtn, boxColor);
+                DrawRectangleLinesEx(logoutBtn, 2, GRAY);
+
+                DrawText("Logout",
+                    logoutBtn.x + 15,
+                    logoutBtn.y + 10,
                     20,
                     textColor);
             }
