@@ -68,37 +68,114 @@ void DrawHomeScreen(bool darkMode)
         DrawRectangle(250, y, 500, 80, boxColor);
         DrawText("Mission Impossible", 280, y + 10, 25, textColor);
         DrawText("16:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Deadpool 3", 280, y + 10, 25, textColor);
+        DrawText("19:30 | Hall 2", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Inside Out 2", 280, y + 10, 25, textColor);
+        DrawText("13:00 | Hall 3", 280, y + 45, 18, DARKGRAY);
         break;
+
 
     case 2:
         DrawRectangle(250, y, 500, 80, boxColor);
         DrawText("Lilo And Stitch", 280, y + 10, 25, textColor);
         DrawText("13:30 | Hall 3", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Frozen 3", 280, y + 10, 25, textColor);
+        DrawText("17:00 | Hall 2", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Spider-Man: Beyond", 280, y + 10, 25, textColor);
+        DrawText("20:30 | Hall 1", 280, y + 45, 18, DARKGRAY);
         break;
+
 
     case 3:
         DrawRectangle(250, y, 500, 80, boxColor);
         DrawText("Superman", 280, y + 10, 25, textColor);
         DrawText("19:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Batman Reborn", 280, y + 10, 25, textColor);
+        DrawText("21:30 | Hall 2", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("The Flash", 280, y + 10, 25, textColor);
+        DrawText("15:00 | Hall 3", 280, y + 45, 18, DARKGRAY);
         break;
 
     case 4:
         DrawRectangle(250, y, 500, 80, boxColor);
         DrawText("F1", 280, y + 10, 25, textColor);
         DrawText("20:15 | Hall 2", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Fast X", 280, y + 10, 25, textColor);
+        DrawText("18:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Gran Turismo", 280, y + 10, 25, textColor);
+        DrawText("14:30 | Hall 3", 280, y + 45, 18, DARKGRAY);
         break;
+
 
     case 5:
         DrawRectangle(250, y, 500, 80, boxColor);
         DrawText("Elio", 280, y + 10, 25, textColor);
         DrawText("15:45 | Hall 3", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Toy Story 5", 280, y + 10, 25, textColor);
+        DrawText("18:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Minions 3", 280, y + 10, 25, textColor);
+        DrawText("13:30 | Hall 2", 280, y + 45, 18, DARKGRAY);
         break;
+
 
     case 6:
         DrawRectangle(250, y, 500, 80, boxColor);
         DrawText("Jurassic World", 280, y + 10, 25, textColor);
         DrawText("21:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("King Kong Returns", 280, y + 10, 25, textColor);
+        DrawText("18:30 | Hall 2", 280, y + 45, 18, DARKGRAY);
+
+        y += 100;
+
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Godzilla X", 280, y + 10, 25, textColor);
+        DrawText("16:00 | Hall 3", 280, y + 45, 18, DARKGRAY);
         break;
+
     }
 
     Rectangle backBtn = { 20,20,100,40 };
