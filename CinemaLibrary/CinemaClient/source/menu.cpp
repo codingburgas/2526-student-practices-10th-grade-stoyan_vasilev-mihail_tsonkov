@@ -8,6 +8,17 @@ void DrawHomeScreen(bool darkMode)
 
     static int selectedDay = 0;
 
+    const char* dates[] =
+    {
+        "Monday 16 June",
+        "Tuesday 17 June",
+        "Wednesday 18 June",
+        "Thursday 19 June",
+        "Friday 20 June",
+        "Saturday 21 June",
+        "Sunday 22 June"
+    };
+
     Rectangle prevBtn = { 250,100,60,40 };
     Rectangle nextBtn = { 690,100,60,40 };
 
@@ -35,50 +46,63 @@ void DrawHomeScreen(bool darkMode)
     DrawText("<", 272, 108, 25, textColor);
     DrawText(">", 712, 108, 25, textColor);
 
-    DrawText(TextFormat("Day %d", selectedDay), 450, 108, 25, textColor);
+    DrawText(
+        dates[selectedDay],
+        400,
+        108,
+        25,
+        textColor);
 
     int y = 200;
 
     switch (selectedDay)
     {
     case 0:
-        DrawRectangle(250, y, 500, 60, boxColor);
-        DrawText("Minecraft Movie", 280, y + 18, 25, textColor);
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Minecraft Movie", 280, y + 10, 25, textColor);
+        DrawText("14:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
 
-        y += 80;
+        y += 100;
 
-        DrawRectangle(250, y, 500, 60, boxColor);
-        DrawText("How To Train Your Dragon", 280, y + 18, 25, textColor);
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("How To Train Your Dragon", 280, y + 10, 25, textColor);
+        DrawText("18:30 | Hall 2", 280, y + 45, 18, DARKGRAY);
         break;
 
     case 1:
-        DrawRectangle(250, y, 500, 60, boxColor);
-        DrawText("Mission Impossible", 280, y + 18, 25, textColor);
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Mission Impossible", 280, y + 10, 25, textColor);
+        DrawText("16:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
         break;
 
     case 2:
-        DrawRectangle(250, y, 500, 60, boxColor);
-        DrawText("Lilo And Stitch", 280, y + 18, 25, textColor);
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Lilo And Stitch", 280, y + 10, 25, textColor);
+        DrawText("13:30 | Hall 3", 280, y + 45, 18, DARKGRAY);
         break;
 
     case 3:
-        DrawRectangle(250, y, 500, 60, boxColor);
-        DrawText("Superman", 280, y + 18, 25, textColor);
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Superman", 280, y + 10, 25, textColor);
+        DrawText("19:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
         break;
 
     case 4:
-        DrawRectangle(250, y, 500, 60, boxColor);
-        DrawText("F1", 280, y + 18, 25, textColor);
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("F1", 280, y + 10, 25, textColor);
+        DrawText("20:15 | Hall 2", 280, y + 45, 18, DARKGRAY);
         break;
 
     case 5:
-        DrawRectangle(250, y, 500, 60, boxColor);
-        DrawText("Elio", 280, y + 18, 25, textColor);
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Elio", 280, y + 10, 25, textColor);
+        DrawText("15:45 | Hall 3", 280, y + 45, 18, DARKGRAY);
         break;
 
     case 6:
-        DrawRectangle(250, y, 500, 60, boxColor);
-        DrawText("Jurassic World", 280, y + 18, 25, textColor);
+        DrawRectangle(250, y, 500, 80, boxColor);
+        DrawText("Jurassic World", 280, y + 10, 25, textColor);
+        DrawText("21:00 | Hall 1", 280, y + 45, 18, DARKGRAY);
         break;
     }
 
