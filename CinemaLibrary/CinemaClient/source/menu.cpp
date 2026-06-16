@@ -216,6 +216,7 @@ int window()
 
     InitWindow(screenWidth, screenHeight, "Cinema");
     SetTargetFPS(60);
+    Texture2D logo = LoadTexture("../assets/logo.png");
 
     ScreenState currentScreen = SCREEN_MENU;
 
@@ -326,6 +327,7 @@ int window()
                     20,
                     textColor);
             }
+            DrawTexture(logo, screenWidth / 2 - logo.width / 2, 150, WHITE);
 
             DrawText(
                 "Cinema",
