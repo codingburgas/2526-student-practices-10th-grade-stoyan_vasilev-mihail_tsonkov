@@ -13,6 +13,10 @@ enum ScreenState
     SCREEN_REMOVE_MOVIE
 };
 
+void DrawHomeScreen(bool darkMode, bool isAdmin, ScreenState& currentScreen, bool& isLoggedIn, char* currentUser, char* loginUser, char* loginPass);
+void DrawAddMovieScreen(bool darkMode, float& cursorBlink, ScreenState& currentScreen);
+void DrawRemoveMovieScreen(bool darkMode, float& cursorBlink, ScreenState& currentScreen);
+
 struct EventInputState
 {
     char yearText[32] = "";
