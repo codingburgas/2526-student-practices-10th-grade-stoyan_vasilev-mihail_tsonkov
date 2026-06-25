@@ -10,11 +10,30 @@ struct Movie
     char hall[32];
 };
 
+struct Booking
+{
+    char username[64];
+    int dayIndex;
+    char movieName[128];
+    int row;
+    int col;
+};
+
+struct SelectedMovie
+{
+    int dayIndex = 0;
+    char name[128] = "";
+    char time[32] = "";
+    char hall[32] = "";
+    bool active = false;
+};
+
+static SelectedMovie selectedMovie;
+
 void CreateDefaultMoviesFile()
 {
     ofstream file("movies.txt");
     if (!file.is_open()) return;
-
     file << "0|Minecraft Movie|14:00|Hall 1\n";
     file << "0|How To Train Your Dragon|18:30|Hall 2\n";
     file << "1|Mission Impossible|16:00|Hall 1\n";
@@ -35,14 +54,12 @@ void CreateDefaultMoviesFile()
     file << "6|Jurassic World|21:00|Hall 1\n";
     file << "6|King Kong Returns|18:30|Hall 2\n";
     file << "6|Godzilla X|16:00|Hall 3\n";
-
     file.close();
 }
 
 void LoadMovies(Movie movies[], int& count, int maxMovies)
 {
     count = 0;
-
     ifstream check("movies.txt");
     if (!check.is_open())
     {
@@ -53,27 +70,21 @@ void LoadMovies(Movie movies[], int& count, int maxMovies)
     {
         check.close();
     }
-
     ifstream file("movies.txt");
     if (!file.is_open()) return;
-
     string line;
     while (getline(file, line) && count < maxMovies)
     {
         if (line.empty()) continue;
-
         size_t pos1 = line.find('|');
         size_t pos2 = line.find('|', pos1 + 1);
         size_t pos3 = line.find('|', pos2 + 1);
-
         if (pos1 == string::npos || pos2 == string::npos || pos3 == string::npos)
             continue;
-
         string dayStr = line.substr(0, pos1);
         string nameStr = line.substr(pos1 + 1, pos2 - pos1 - 1);
         string timeStr = line.substr(pos2 + 1, pos3 - pos2 - 1);
         string hallStr = line.substr(pos3 + 1);
-
         movies[count].dayIndex = atoi(dayStr.c_str());
         strncpy(movies[count].name, nameStr.c_str(), 127);
         movies[count].name[127] = '\0';
@@ -81,7 +92,6 @@ void LoadMovies(Movie movies[], int& count, int maxMovies)
         movies[count].time[31] = '\0';
         strncpy(movies[count].hall, hallStr.c_str(), 31);
         movies[count].hall[31] = '\0';
-
         count++;
     }
     file.close();
@@ -91,7 +101,6 @@ void SaveMovies(Movie movies[], int count)
 {
     ofstream file("movies.txt");
     if (!file.is_open()) return;
-
     for (int i = 0; i < count; i++)
     {
         file << movies[i].dayIndex << "|"
@@ -102,13 +111,71 @@ void SaveMovies(Movie movies[], int count)
     file.close();
 }
 
+void LoadBookings(Booking bookings[], int& count, int maxBookings)
+{
+    count = 0;
+    ifstream file("bookings.txt");
+    if (!file.is_open()) return;
+    string line;
+    while (getline(file, line) && count < maxBookings)
+    {
+        if (line.empty()) continue;
+        size_t p1 = line.find('|');
+        size_t p2 = line.find('|', p1 + 1);
+        size_t p3 = line.find('|', p2 + 1);
+        size_t p4 = line.find('|', p3 + 1);
+        if (p1 == string::npos || p2 == string::npos || p3 == string::npos || p4 == string::npos)
+            continue;
+        strncpy(bookings[count].username, line.substr(0, p1).c_str(), 63);
+        bookings[count].username[63] = '\0';
+        bookings[count].dayIndex = atoi(line.substr(p1 + 1, p2 - p1 - 1).c_str());
+        strncpy(bookings[count].movieName, line.substr(p2 + 1, p3 - p2 - 1).c_str(), 127);
+        bookings[count].movieName[127] = '\0';
+        bookings[count].row = atoi(line.substr(p3 + 1, p4 - p3 - 1).c_str());
+        bookings[count].col = atoi(line.substr(p4 + 1).c_str());
+        count++;
+    }
+    file.close();
+}
+
+bool IsSeatBookedInArray(Booking bookings[], int count, int dayIndex, const char* movieName, int row, int col, const char* currentUser, bool& isMine)
+{
+    for (int i = 0; i < count; i++)
+    {
+        if (bookings[i].dayIndex == dayIndex &&
+            strcmp(bookings[i].movieName, movieName) == 0 &&
+            bookings[i].row == row && bookings[i].col == col)
+        {
+            isMine = (strcmp(bookings[i].username, currentUser) == 0);
+            return true;
+        }
+    }
+    isMine = false;
+    return false;
+}
+
+void AddBookings(const char* username, int dayIndex, const char* movieName, bool selectedSeats[5][8])
+{
+    ofstream file("bookings.txt", ios::app);
+    if (!file.is_open()) return;
+    for (int r = 0; r < 5; r++)
+    {
+        for (int c = 0; c < 8; c++)
+        {
+            if (selectedSeats[r][c])
+            {
+                file << username << "|" << dayIndex << "|" << movieName << "|" << r << "|" << c << "\n";
+            }
+        }
+    }
+    file.close();
+}
+
 void DrawHomeScreen(bool darkMode, bool isAdmin, ScreenState& currentScreen, bool& isLoggedIn, char* currentUser, char* loginUser, char* loginPass)
 {
     Color textColor = darkMode ? RAYWHITE : BLACK;
     Color boxColor = darkMode ? Color{ 60,60,70,255 } : LIGHTGRAY;
-
     static int selectedDay = 0;
-
     const char* dates[] =
     {
         "Monday 16 June",
@@ -119,66 +186,43 @@ void DrawHomeScreen(bool darkMode, bool isAdmin, ScreenState& currentScreen, boo
         "Saturday 21 June",
         "Sunday 22 June"
     };
-
     Rectangle prevBtn = { 250,100,60,40 };
     Rectangle nextBtn = { 690,100,60,40 };
-
     Vector2 mouse = GetMousePosition();
-
-    if (CheckCollisionPointRec(mouse, prevBtn) &&
-        IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    if (CheckCollisionPointRec(mouse, prevBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        if (selectedDay > 0)
-            selectedDay--;
+        if (selectedDay > 0) selectedDay--;
     }
-
-    if (CheckCollisionPointRec(mouse, nextBtn) &&
-        IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+    if (CheckCollisionPointRec(mouse, nextBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
-        if (selectedDay < 6)
-            selectedDay++;
+        if (selectedDay < 6) selectedDay++;
     }
-
     DrawText("Movies In Cinema", 320, 40, 35, textColor);
-
     DrawRectangleRec(prevBtn, boxColor);
     DrawRectangleRec(nextBtn, boxColor);
-
     DrawText("<", 272, 108, 25, textColor);
     DrawText(">", 712, 108, 25, textColor);
-
     DrawText(dates[selectedDay], 400, 108, 25, textColor);
-
     if (isAdmin)
     {
         DrawRectangle(820, 80, 150, 35, RED);
         DrawText("ADMIN MODE", 835, 87, 20, RAYWHITE);
-
         Rectangle addBtn = { 820, 130, 150, 45 };
         Rectangle removeBtn = { 820, 190, 150, 45 };
-
         DrawRectangleRec(addBtn, Color{ 0, 200, 0, 255 });
         DrawRectangleLinesEx(addBtn, 2, BLACK);
         DrawText("ADD MOVIE", (int)addBtn.x + 15, (int)addBtn.y + 12, 20, WHITE);
-
         DrawRectangleRec(removeBtn, Color{ 200, 0, 0, 255 });
         DrawRectangleLinesEx(removeBtn, 2, BLACK);
         DrawText("REMOVE", (int)removeBtn.x + 25, (int)removeBtn.y + 12, 20, WHITE);
-
         if (CheckCollisionPointRec(mouse, addBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
             currentScreen = SCREEN_ADD_MOVIE;
-        }
         if (CheckCollisionPointRec(mouse, removeBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-        {
             currentScreen = SCREEN_REMOVE_MOVIE;
-        }
     }
-
     Movie movies[50];
     int movieCount = 0;
     LoadMovies(movies, movieCount, 50);
-
     int y = 200;
     for (int i = 0; i < movieCount; i++)
     {
@@ -186,32 +230,35 @@ void DrawHomeScreen(bool darkMode, bool isAdmin, ScreenState& currentScreen, boo
         {
             DrawRectangle(250, y, 500, 80, boxColor);
             DrawText(movies[i].name, 280, y + 10, 25, textColor);
-
             char info[256];
             snprintf(info, 256, "%s | %s", movies[i].time, movies[i].hall);
             DrawText(info, 280, y + 45, 18, DARKGRAY);
-
+            if (isLoggedIn)
+            {
+                Rectangle movieRect = { 250.0f, (float)y, 500.0f, 80.0f };
+                if (CheckCollisionPointRec(mouse, movieRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+                {
+                    selectedMovie.dayIndex = selectedDay;
+                    strcpy(selectedMovie.name, movies[i].name);
+                    strcpy(selectedMovie.time, movies[i].time);
+                    strcpy(selectedMovie.hall, movies[i].hall);
+                    selectedMovie.active = true;
+                    currentScreen = SCREEN_SEAT_SELECT;
+                }
+            }
             y += 100;
         }
     }
-
-    // Back button - goes to menu
     Rectangle backBtn = { 20,20,100,40 };
     DrawRectangleRec(backBtn, boxColor);
     DrawRectangleLinesEx(backBtn, 2, GRAY);
     DrawText("Back", 45, 30, 20, textColor);
-
     if (CheckCollisionPointRec(mouse, backBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-    {
         currentScreen = SCREEN_MENU;
-    }
-
-    // Logout button - logs out and goes to menu
     Rectangle logoutBtn = { 20, 70, 100, 40 };
     DrawRectangleRec(logoutBtn, boxColor);
     DrawRectangleLinesEx(logoutBtn, 2, GRAY);
     DrawText("Logout", 30, 80, 20, textColor);
-
     if (CheckCollisionPointRec(mouse, logoutBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         isLoggedIn = false;
@@ -222,50 +269,39 @@ void DrawHomeScreen(bool darkMode, bool isAdmin, ScreenState& currentScreen, boo
         currentScreen = SCREEN_MENU;
     }
 }
+
 void DrawAddMovieScreen(bool darkMode, float& cursorBlink, ScreenState& currentScreen)
 {
     Color textColor = darkMode ? RAYWHITE : BLACK;
     Color boxColor = darkMode ? Color{ 60, 60, 70, 255 } : LIGHTGRAY;
     Color activeColor = darkMode ? Color{ 80, 80, 90, 255 } : WHITE;
-
     Vector2 mouse = GetMousePosition();
-
     static char dayText[8] = "";
     static char nameText[128] = "";
     static char timeText[32] = "";
     static char hallText[32] = "";
-
     static bool dayActive = false;
     static bool nameActive = false;
     static bool timeActive = false;
     static bool hallActive = false;
-
     static const char* errorMsg = "";
     static const char* successMsg = "";
-
     Rectangle dayBox = { 300.0f, 200.0f, 400.0f, 40.0f };
     Rectangle nameBox = { 300.0f, 280.0f, 400.0f, 40.0f };
     Rectangle timeBox = { 300.0f, 360.0f, 400.0f, 40.0f };
     Rectangle hallBox = { 300.0f, 440.0f, 400.0f, 40.0f };
     Rectangle addBtn = { 400.0f, 520.0f, 200.0f, 50.0f };
-
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         dayActive = CheckCollisionPointRec(mouse, dayBox);
         nameActive = CheckCollisionPointRec(mouse, nameBox);
         timeActive = CheckCollisionPointRec(mouse, timeBox);
         hallActive = CheckCollisionPointRec(mouse, hallBox);
-
         if (CheckCollisionPointRec(mouse, addBtn))
         {
             int dayIdx = atoi(dayText);
-
-            bool hasPipe = (strchr(nameText, '|') != NULL) ||
-                (strchr(timeText, '|') != NULL) ||
-                (strchr(hallText, '|') != NULL);
-
-            if (dayIdx < 0 || dayIdx > 6 || strlen(nameText) == 0 ||
-                strlen(timeText) == 0 || strlen(hallText) == 0)
+            bool hasPipe = (strchr(nameText, '|') != NULL) || (strchr(timeText, '|') != NULL) || (strchr(hallText, '|') != NULL);
+            if (dayIdx < 0 || dayIdx > 6 || strlen(nameText) == 0 || strlen(timeText) == 0 || strlen(hallText) == 0)
             {
                 errorMsg = "Invalid input! Check day (0-6) and fill all fields.";
                 successMsg = "";
@@ -283,11 +319,9 @@ void DrawAddMovieScreen(bool darkMode, float& cursorBlink, ScreenState& currentS
                     nameText[nameLen - 1] = '\0';
                     nameLen--;
                 }
-
                 ofstream file("movies.txt", ios::app);
                 file << dayIdx << "|" << nameText << "|" << timeText << "|" << hallText << "\n";
                 file.close();
-
                 successMsg = "Movie added successfully!";
                 errorMsg = "";
                 dayText[0] = '\0';
@@ -297,55 +331,44 @@ void DrawAddMovieScreen(bool darkMode, float& cursorBlink, ScreenState& currentS
             }
         }
     }
-
     HandleTextInput(dayText, 8, dayActive);
     HandleTextInput(nameText, 128, nameActive);
     HandleTextInput(timeText, 32, timeActive);
     HandleTextInput(hallText, 32, hallActive);
-
     if (dayActive || nameActive || timeActive || hallActive)
     {
         cursorBlink += GetFrameTime();
         if (cursorBlink > 1.0f) cursorBlink = 0.0f;
     }
-
     DrawText("Add Movie", 400, 100, 40, textColor);
-
     DrawText("Day (0-6):", 300, 175, 20, textColor);
     DrawRectangleRec(dayBox, dayActive ? activeColor : boxColor);
     DrawRectangleLinesEx(dayBox, 2, dayActive ? DARKBLUE : GRAY);
     DrawText(dayText, (int)dayBox.x + 10, (int)dayBox.y + 10, 20, textColor);
-
     DrawText("Movie Name:", 300, 255, 20, textColor);
     DrawRectangleRec(nameBox, nameActive ? activeColor : boxColor);
     DrawRectangleLinesEx(nameBox, 2, nameActive ? DARKBLUE : GRAY);
     DrawText(nameText, (int)nameBox.x + 10, (int)nameBox.y + 10, 20, textColor);
-
     DrawText("Time:", 300, 335, 20, textColor);
     DrawRectangleRec(timeBox, timeActive ? activeColor : boxColor);
     DrawRectangleLinesEx(timeBox, 2, timeActive ? DARKBLUE : GRAY);
     DrawText(timeText, (int)timeBox.x + 10, (int)timeBox.y + 10, 20, textColor);
-
     DrawText("Hall:", 300, 415, 20, textColor);
     DrawRectangleRec(hallBox, hallActive ? activeColor : boxColor);
     DrawRectangleLinesEx(hallBox, 2, hallActive ? DARKBLUE : GRAY);
     DrawText(hallText, (int)hallBox.x + 10, (int)hallBox.y + 10, 20, textColor);
-
     if (strlen(errorMsg) > 0)
         DrawText(errorMsg, 200, 490, 20, RED);
     if (strlen(successMsg) > 0)
         DrawText(successMsg, 280, 490, 20, DARKGREEN);
-
     DrawRectangleRec(addBtn, DARKGREEN);
     DrawText("Add Movie", (int)addBtn.x + 45, (int)addBtn.y + 15, 20, WHITE);
-
     if (DrawAuthBackButton(mouse, darkMode))
     {
         currentScreen = SCREEN_HOME;
         errorMsg = "";
         successMsg = "";
     }
-
     if (dayActive && cursorBlink < 0.5f)
     {
         int w = MeasureText(dayText, 20);
@@ -373,46 +396,53 @@ void DrawRemoveMovieScreen(bool darkMode, float& cursorBlink, ScreenState& curre
     Color textColor = darkMode ? RAYWHITE : BLACK;
     Color boxColor = darkMode ? Color{ 60, 60, 70, 255 } : LIGHTGRAY;
     Color activeColor = darkMode ? Color{ 80, 80, 90, 255 } : WHITE;
-
     Vector2 mouse = GetMousePosition();
-
     static char dayText[8] = "";
     static char nameText[128] = "";
     static bool dayActive = false;
     static bool nameActive = false;
     static const char* errorMsg = "";
     static const char* successMsg = "";
-
-    // Load movies
     Movie movies[50];
     int count = 0;
     LoadMovies(movies, count, 50);
 
-    // INPUT AREA (right side)
-    Rectangle dayBox = { 550.0f, 150.0f, 400.0f, 40.0f };
-    Rectangle nameBox = { 550.0f, 250.0f, 400.0f, 40.0f };
-    Rectangle removeBtn = { 600.0f, 350.0f, 300.0f, 50.0f };
+    int titleWidth = MeasureText("Remove Movie", 40);
+    DrawText("Remove Movie", (1000 - titleWidth) / 2, 30, 40, textColor);
+
+    DrawRectangle(30, 90, 480, 680, darkMode ? Color{ 40,40,50,255 } : Color{ 230,230,230,255 });
+    DrawRectangleLinesEx(Rectangle{ 30, 90, 480, 680 }, 2, GRAY);
+    DrawText("Current Movies:", 50, 100, 20, textColor);
+    int listY = 130;
+    for (int i = 0; i < count && listY < 750; i++)
+    {
+        char line[256];
+        snprintf(line, 256, "[%d] %s | %s | %s", movies[i].dayIndex, movies[i].name, movies[i].time, movies[i].hall);
+        DrawText(line, 50, listY, 16, DARKGRAY);
+        listY += 22;
+    }
+
+    const int formX = 540;
+    Rectangle dayBox = { (float)formX, 220.0f, 420.0f, 40.0f };
+    Rectangle nameBox = { (float)formX, 300.0f, 420.0f, 40.0f };
+    Rectangle removeBtn = { (float)formX + 110, 400.0f, 200.0f, 50.0f };
 
     if (IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
     {
         dayActive = CheckCollisionPointRec(mouse, dayBox);
         nameActive = CheckCollisionPointRec(mouse, nameBox);
-
         if (CheckCollisionPointRec(mouse, removeBtn))
         {
             int dayIdx = atoi(dayText);
-
-            // Trim input
             int inputLen = strlen(nameText);
             while (inputLen > 0 && nameText[inputLen - 1] == ' ')
             {
                 nameText[inputLen - 1] = '\0';
                 inputLen--;
             }
-
             if (strlen(nameText) == 0 || dayIdx < 0 || dayIdx > 6)
             {
-                errorMsg = "Enter day (0-6) and movie name.";
+                errorMsg = "Invalid input! Enter day (0-6) and movie name.";
                 successMsg = "";
             }
             else
@@ -420,10 +450,8 @@ void DrawRemoveMovieScreen(bool darkMode, float& cursorBlink, ScreenState& curre
                 bool found = false;
                 int newCount = 0;
                 Movie newMovies[50];
-
                 for (int i = 0; i < count; i++)
                 {
-                    // Trim stored name for comparison
                     char storedName[128];
                     strcpy(storedName, movies[i].name);
                     int storedLen = strlen(storedName);
@@ -432,80 +460,55 @@ void DrawRemoveMovieScreen(bool darkMode, float& cursorBlink, ScreenState& curre
                         storedName[storedLen - 1] = '\0';
                         storedLen--;
                     }
-
                     if (movies[i].dayIndex == dayIdx && strcmp(storedName, nameText) == 0 && !found)
-                    {
                         found = true;
-                    }
                     else
                     {
                         newMovies[newCount] = movies[i];
                         newCount++;
                     }
                 }
-
                 if (found)
                 {
                     SaveMovies(newMovies, newCount);
-                    successMsg = "Movie removed!";
+                    successMsg = "Movie removed successfully!";
                     errorMsg = "";
                     dayText[0] = '\0';
                     nameText[0] = '\0';
                 }
                 else
                 {
-                    errorMsg = "Not found! Check list on left.";
+                    errorMsg = "Movie not found! Check spelling and day.";
                     successMsg = "";
                 }
             }
         }
     }
-
     HandleTextInput(dayText, 8, dayActive);
     HandleTextInput(nameText, 128, nameActive);
-
     if (dayActive || nameActive)
     {
         cursorBlink += GetFrameTime();
         if (cursorBlink > 1.0f) cursorBlink = 0.0f;
     }
 
-    // TITLE
-    DrawText("Remove Movie", 350, 30, 40, textColor);
-
-    // LEFT SIDE: Movie list
-    DrawRectangle(30, 90, 480, 680, darkMode ? Color{ 40,40,50,255 } : Color{ 230,230,230,255 });
-    DrawRectangleLinesEx(Rectangle{ 30, 90, 480, 680 }, 2, GRAY);
-    DrawText("Current Movies:", 50, 100, 20, textColor);
-
-    int listY = 130;
-    for (int i = 0; i < count && listY < 750; i++)
-    {
-        char line[256];
-        snprintf(line, 256, "[%d] %s | %s | %s",
-            movies[i].dayIndex, movies[i].name, movies[i].time, movies[i].hall);
-        DrawText(line, 50, listY, 16, DARKGRAY);
-        listY += 22;
-    }
-
-    // RIGHT SIDE: Input form
-    DrawText("Day (0-6):", 550, 120, 22, textColor);
+    DrawText("Day (0-6):", formX, 195, 20, textColor);
     DrawRectangleRec(dayBox, dayActive ? activeColor : boxColor);
     DrawRectangleLinesEx(dayBox, 2, dayActive ? DARKBLUE : GRAY);
     DrawText(dayText, (int)dayBox.x + 10, (int)dayBox.y + 10, 20, textColor);
 
-    DrawText("Movie Name:", 550, 220, 22, textColor);
+    DrawText("Movie Name:", formX, 275, 20, textColor);
     DrawRectangleRec(nameBox, nameActive ? activeColor : boxColor);
     DrawRectangleLinesEx(nameBox, 2, nameActive ? DARKBLUE : GRAY);
     DrawText(nameText, (int)nameBox.x + 10, (int)nameBox.y + 10, 20, textColor);
 
     if (strlen(errorMsg) > 0)
-        DrawText(errorMsg, 550, 310, 20, RED);
+        DrawText(errorMsg, formX, 370, 20, RED);
     if (strlen(successMsg) > 0)
-        DrawText(successMsg, 550, 310, 20, DARKGREEN);
+        DrawText(successMsg, formX, 370, 20, DARKGREEN);
 
     DrawRectangleRec(removeBtn, MAROON);
-    DrawText("REMOVE MOVIE", (int)removeBtn.x + 60, (int)removeBtn.y + 15, 22, WHITE);
+    DrawText("Remove", (int)removeBtn.x + 50, (int)removeBtn.y + 15, 20, WHITE);
 
     if (DrawAuthBackButton(mouse, darkMode))
     {
@@ -513,7 +516,6 @@ void DrawRemoveMovieScreen(bool darkMode, float& cursorBlink, ScreenState& curre
         errorMsg = "";
         successMsg = "";
     }
-
     if (dayActive && cursorBlink < 0.5f)
     {
         int w = MeasureText(dayText, 20);
@@ -526,60 +528,166 @@ void DrawRemoveMovieScreen(bool darkMode, float& cursorBlink, ScreenState& curre
     }
 }
 
+void DrawSeatSelectScreen(bool darkMode, ScreenState& currentScreen, char* currentUser)
+{
+    Color textColor = darkMode ? RAYWHITE : BLACK;
+    Vector2 mouse = GetMousePosition();
+    static Booking bookings[500];
+    static int bookingCount = 0;
+    static bool firstTime = true;
+    static bool mySelectedSeats[5][8] = { false };
+    if (firstTime)
+    {
+        LoadBookings(bookings, bookingCount, 500);
+        memset(mySelectedSeats, 0, sizeof(mySelectedSeats));
+        firstTime = false;
+    }
+
+    const int seatSize = 48;
+    const int gap = 8;
+    const int cols = 8;
+    const int rows = 5;
+    const int gridWidth = cols * seatSize + (cols - 1) * gap;
+    const int gridHeight = rows * seatSize + (rows - 1) * gap;
+    const int startX = (1000 - gridWidth) / 2;
+    const int startY = 180;
+
+    int titleWidth = MeasureText(selectedMovie.name, 28);
+    DrawText(selectedMovie.name, (1000 - titleWidth) / 2, 20, 28, textColor);
+
+    char info[256];
+    snprintf(info, 256, "Day %d | %s | %s", selectedMovie.dayIndex, selectedMovie.time, selectedMovie.hall);
+    int infoWidth = MeasureText(info, 18);
+    DrawText(info, (1000 - infoWidth) / 2, 55, 18, DARKGRAY);
+
+    int screenWidth = gridWidth + 40;
+    int screenX = (1000 - screenWidth) / 2;
+    DrawRectangle(screenX, 90, screenWidth, 28, darkMode ? DARKGRAY : GRAY);
+    int screenTextWidth = MeasureText("SCREEN", 16);
+    DrawText("SCREEN", (1000 - screenTextWidth) / 2, 95, 16, textColor);
+
+    int selectedCount = 0;
+
+    for (int c = 0; c < 8; c++)
+    {
+        char num[2] = { '1' + c, '\0' };
+        int numWidth = MeasureText(num, 14);
+        DrawText(num, startX + c * (seatSize + gap) + (seatSize - numWidth) / 2, startY - 24, 14, textColor);
+    }
+
+    for (int r = 0; r < 5; r++)
+    {
+        char rowLabel[2] = { 'A' + r, '\0' };
+        int labelWidth = MeasureText(rowLabel, 14);
+        DrawText(rowLabel, startX - 28 + (24 - labelWidth) / 2, startY + r * (seatSize + gap) + (seatSize - 14) / 2, 14, textColor);
+        for (int c = 0; c < 8; c++)
+        {
+            int x = startX + c * (seatSize + gap);
+            int y = startY + r * (seatSize + gap);
+            Rectangle seatRect = { (float)x, (float)y, (float)seatSize, (float)seatSize };
+            bool isMine = false;
+            bool booked = IsSeatBookedInArray(bookings, bookingCount, selectedMovie.dayIndex, selectedMovie.name, r, c, currentUser, isMine);
+            Color seatColor;
+            if (mySelectedSeats[r][c])
+                seatColor = YELLOW;
+            else if (booked && isMine)
+                seatColor = ORANGE;
+            else if (booked)
+                seatColor = RED;
+            else
+                seatColor = GREEN;
+            DrawRectangleRec(seatRect, seatColor);
+            DrawRectangleLinesEx(seatRect, 2, DARKGRAY);
+            if (CheckCollisionPointRec(mouse, seatRect) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            {
+                if (!booked)
+                    mySelectedSeats[r][c] = !mySelectedSeats[r][c];
+            }
+            if (mySelectedSeats[r][c])
+                selectedCount++;
+        }
+    }
+
+    int legY = startY + gridHeight + 35;
+    int legendTotalWidth = 16 + 4 + MeasureText("Available", 14) + 20 + 16 + 4 + MeasureText("Booked", 14) + 20 + 16 + 4 + MeasureText("Yours", 14) + 20 + 16 + 4 + MeasureText("Selected", 14);
+    int legendX = (1000 - legendTotalWidth) / 2;
+    int lx = legendX;
+
+    DrawRectangle(lx, legY, 16, 16, GREEN);
+    lx += 20;
+    DrawText("Available", lx, legY, 14, textColor);
+    lx += MeasureText("Available", 14) + 20;
+    DrawRectangle(lx, legY, 16, 16, RED);
+    lx += 20;
+    DrawText("Booked", lx, legY, 14, textColor);
+    lx += MeasureText("Booked", 14) + 20;
+    DrawRectangle(lx, legY, 16, 16, ORANGE);
+    lx += 20;
+    DrawText("Yours", lx, legY, 14, textColor);
+    lx += MeasureText("Yours", 14) + 20;
+    DrawRectangle(lx, legY, 16, 16, YELLOW);
+    lx += 20;
+    DrawText("Selected", lx, legY, 14, textColor);
+
+    char countText[64];
+    snprintf(countText, 64, "Selected: %d seats", selectedCount);
+    int countWidth = MeasureText(countText, 20);
+    DrawText(countText, (1000 - countWidth) / 2, legY + 35, 20, textColor);
+
+    Rectangle confirmBtn = { 400, legY + 70, 200, 45 };
+    DrawRectangleRec(confirmBtn, DARKBLUE);
+    DrawText("Confirm", (int)confirmBtn.x + 55, (int)confirmBtn.y + 12, 20, WHITE);
+
+    if (CheckCollisionPointRec(mouse, confirmBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON) && selectedCount > 0)
+    {
+        AddBookings(currentUser, selectedMovie.dayIndex, selectedMovie.name, mySelectedSeats);
+        memset(mySelectedSeats, 0, sizeof(mySelectedSeats));
+        firstTime = true;
+        currentScreen = SCREEN_HOME;
+    }
+
+    if (DrawAuthBackButton(mouse, darkMode))
+    {
+        memset(mySelectedSeats, 0, sizeof(mySelectedSeats));
+        firstTime = true;
+        currentScreen = SCREEN_HOME;
+    }
+}
+
 int window()
 {
     const int screenWidth = 1000;
     const int screenHeight = 800;
-
     static char loginUser[64] = "";
     static char loginPass[64] = "";
-
     static char regUser[64] = "";
     static char regPass[64] = "";
     static char regConfirm[64] = "";
-
     bool loginUserActive = false;
     bool loginPassActive = false;
-
     bool regUserActive = false;
     bool regPassActive = false;
     bool regConfirmActive = false;
-
     float authCursorBlink = 0.0f;
-
     bool isLoggedIn = false;
     bool isAdmin = false;
-
     char currentUser[64] = "";
-
     static EventInputState eventInputState;
-
     InitWindow(screenWidth, screenHeight, "Cinema");
     SetTargetFPS(60);
     Texture2D logo = LoadTexture("../assets/logo.png");
-
     ScreenState currentScreen = SCREEN_MENU;
-
     bool darkMode = false;
-
     Rectangle loginBtn = { 20.0f, 20.0f, 100.0f, 40.0f };
     Rectangle logoutBtn = { 20.0f, 70.0f, 100.0f, 40.0f };
-
     while (!WindowShouldClose())
     {
         Vector2 mouse = GetMousePosition();
-
         if (currentScreen == SCREEN_MENU)
         {
-            if (!isLoggedIn &&
-                CheckCollisionPointRec(mouse, loginBtn) &&
-                IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
+            if (!isLoggedIn && CheckCollisionPointRec(mouse, loginBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
                 currentScreen = SCREEN_LOGIN;
-            }
-            if (isLoggedIn &&
-                CheckCollisionPointRec(mouse, logoutBtn) &&
-                IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
+            if (isLoggedIn && CheckCollisionPointRec(mouse, logoutBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
             {
                 isLoggedIn = false;
                 isAdmin = false;
@@ -587,126 +695,43 @@ int window()
                 currentScreen = SCREEN_MENU;
             }
         }
-        else if (currentScreen == SCREEN_LOGIN ||
-            currentScreen == SCREEN_REGISTER)
+        else if (currentScreen == SCREEN_LOGIN || currentScreen == SCREEN_REGISTER)
         {
             if (DrawAuthBackButton(mouse, darkMode))
-            {
                 currentScreen = SCREEN_MENU;
-            }
         }
-        else if (currentScreen == SCREEN_HOME)
-        {
-            Rectangle backBtn = { 20,20,100,40 };
-            Rectangle homeLogoutBtn = { 20,70,100,40 };
-
-            if (CheckCollisionPointRec(mouse, backBtn) &&
-                IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
-                currentScreen = SCREEN_MENU;
-            }
-
-            if (CheckCollisionPointRec(mouse, homeLogoutBtn) &&
-                IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
-            {
-                isLoggedIn = false;
-                isAdmin = false;
-                currentUser[0] = '\0';
-                loginUser[0] = '\0';
-                loginPass[0] = '\0';
-                currentScreen = SCREEN_MENU;
-            }
-        }
-        else if (currentScreen == SCREEN_ADD_MOVIE ||
-            currentScreen == SCREEN_REMOVE_MOVIE)
-        {
-            // Back button handled inside draw functions
-        }
-
         BeginDrawing();
-
-        Color background =
-            darkMode ? Color{ 25,25,30,255 } : RAYWHITE;
-
-        Color textColor =
-            darkMode ? RAYWHITE : BLACK;
-
-        Color boxColor =
-            darkMode ? Color{ 60,60,70,255 } : LIGHTGRAY;
-
+        Color background = darkMode ? Color{ 25,25,30,255 } : RAYWHITE;
+        Color textColor = darkMode ? RAYWHITE : BLACK;
+        Color boxColor = darkMode ? Color{ 60,60,70,255 } : LIGHTGRAY;
         ClearBackground(background);
-
         darkMode = DrawDarkModeButton(darkMode);
-
         if (currentScreen == SCREEN_MENU)
         {
             if (!isLoggedIn)
             {
                 DrawRectangleRec(loginBtn, boxColor);
                 DrawRectangleLinesEx(loginBtn, 2, GRAY);
-
-                DrawText("Login",
-                    loginBtn.x + 25,
-                    loginBtn.y + 10,
-                    20,
-                    textColor);
+                DrawText("Login", loginBtn.x + 25, loginBtn.y + 10, 20, textColor);
             }
             else
-            {
-                DrawText(
-                    TextFormat("Welcome, %s", currentUser),
-                    20,
-                    20,
-                    20,
-                    textColor);
-            }
+                DrawText(TextFormat("Welcome, %s", currentUser), 20, 20, 20, textColor);
             if (isLoggedIn)
             {
                 DrawRectangleRec(logoutBtn, boxColor);
                 DrawRectangleLinesEx(logoutBtn, 2, GRAY);
-
-                DrawText("Logout",
-                    logoutBtn.x + 15,
-                    logoutBtn.y + 10,
-                    20,
-                    textColor);
+                DrawText("Logout", logoutBtn.x + 15, logoutBtn.y + 10, 20, textColor);
             }
             DrawTexture(logo, screenWidth / 2 - logo.width / 2, 150, WHITE);
-
-            DrawText(
-                "Cinema",
-                screenWidth / 2 -
-                MeasureText("Cinema", 60) / 2,
-                screenHeight / 2 - 30,
-                60,
-                textColor);
+            DrawText("Cinema", screenWidth / 2 - MeasureText("Cinema", 60) / 2, screenHeight / 2 - 30, 60, textColor);
         }
         else if (currentScreen == SCREEN_LOGIN)
         {
-            DrawLoginScreen(
-                darkMode,
-                loginUser,
-                loginPass,
-                loginUserActive,
-                loginPassActive,
-                authCursorBlink,
-                currentScreen,
-                isLoggedIn,
-                isAdmin,
-                currentUser);
+            DrawLoginScreen(darkMode, loginUser, loginPass, loginUserActive, loginPassActive, authCursorBlink, currentScreen, isLoggedIn, isAdmin, currentUser);
         }
         else if (currentScreen == SCREEN_REGISTER)
         {
-            DrawRegisterScreen(
-                darkMode,
-                regUser,
-                regPass,
-                regConfirm,
-                regUserActive,
-                regPassActive,
-                regConfirmActive,
-                authCursorBlink,
-                currentScreen);
+            DrawRegisterScreen(darkMode, regUser, regPass, regConfirm, regUserActive, regPassActive, regConfirmActive, authCursorBlink, currentScreen);
         }
         else if (currentScreen == SCREEN_HOME)
         {
@@ -720,12 +745,13 @@ int window()
         {
             DrawRemoveMovieScreen(darkMode, authCursorBlink, currentScreen);
         }
-
+        else if (currentScreen == SCREEN_SEAT_SELECT)
+        {
+            DrawSeatSelectScreen(darkMode, currentScreen, currentUser);
+        }
         EndDrawing();
     }
-
     UnloadTexture(logo);
     CloseWindow();
-
     return 0;
 }
