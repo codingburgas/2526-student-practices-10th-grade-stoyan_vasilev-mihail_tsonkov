@@ -18,4 +18,4 @@ Movies
 5|Minions 3|13:30|Hall 2
 6|Jurassic World|21:00|Hall 1
 6|King Kong Returns|18:30|Hall 2
-6|Godzilla X|16:00|Hall 3
+6|Godzilla X|16:00|Hall 31|backrooms|11-12|5

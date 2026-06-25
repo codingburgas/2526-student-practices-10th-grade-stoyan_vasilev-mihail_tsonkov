@@ -1,3 +1,4 @@
+#define _CRT_SECURE_NO_WARNINGS
 #include "../header/menu.h"
 #include "../header/Auth.h"
 
@@ -153,17 +154,16 @@ void DrawHomeScreen(bool darkMode, bool isAdmin, ScreenState& currentScreen)
         DrawRectangle(820, 80, 150, 35, RED);
         DrawText("ADMIN MODE", 835, 87, 20, RAYWHITE);
 
-        // ADMIN BUTTONS
-        Rectangle addBtn = { 820, 120, 150, 40 };
-        Rectangle removeBtn = { 820, 170, 150, 40 };
+        Rectangle addBtn = { 820, 130, 150, 45 };
+        Rectangle removeBtn = { 820, 190, 150, 45 };
 
-        DrawRectangleRec(addBtn, DARKGREEN);
-        DrawRectangleLinesEx(addBtn, 2, GRAY);
-        DrawText("Add Movie", (int)addBtn.x + 20, (int)addBtn.y + 10, 20, WHITE);
+        DrawRectangleRec(addBtn, Color{ 0, 200, 0, 255 });
+        DrawRectangleLinesEx(addBtn, 2, BLACK);
+        DrawText("ADD MOVIE", (int)addBtn.x + 15, (int)addBtn.y + 12, 20, WHITE);
 
-        DrawRectangleRec(removeBtn, MAROON);
-        DrawRectangleLinesEx(removeBtn, 2, GRAY);
-        DrawText("Remove", (int)removeBtn.x + 25, (int)removeBtn.y + 10, 20, WHITE);
+        DrawRectangleRec(removeBtn, Color{ 200, 0, 0, 255 });
+        DrawRectangleLinesEx(removeBtn, 2, BLACK);
+        DrawText("REMOVE", (int)removeBtn.x + 25, (int)removeBtn.y + 12, 20, WHITE);
 
         if (CheckCollisionPointRec(mouse, addBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON))
         {
@@ -319,7 +319,6 @@ void DrawAddMovieScreen(bool darkMode, float& cursorBlink, ScreenState& currentS
         successMsg = "";
     }
 
-    // Cursor blinking
     if (dayActive && cursorBlink < 0.5f)
     {
         int w = MeasureText(dayText, 20);
@@ -386,7 +385,7 @@ void DrawRemoveMovieScreen(bool darkMode, float& cursorBlink, ScreenState& curre
                 {
                     if (movies[i].dayIndex == dayIdx && strcmp(movies[i].name, nameText) == 0 && !found)
                     {
-                        found = true; // Skip this one (remove it)
+                        found = true;
                     }
                     else
                     {
