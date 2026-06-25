@@ -23,6 +23,7 @@ void HandleTextInput(char* text, int maxLen, bool active)
         if (len > 0) text[len - 1] = '\0';
     }
 }
+
 bool AccountExists(const char* username)
 {
     ifstream file("accounts.txt");
@@ -58,7 +59,8 @@ bool DrawAuthBackButton(Vector2 mouse, bool darkMode)
 
     return CheckCollisionPointRec(mouse, backBtn) && IsMouseButtonPressed(MOUSE_LEFT_BUTTON);
 }
-void DrawLoginScreen(bool darkMode, char* username, char* password, bool& userActive, bool& passActive, float& cursorBlink, ScreenState& currentScreen, bool& isLoggedIn, char* currentUser)
+
+void DrawLoginScreen(bool darkMode, char* username, char* password, bool& userActive, bool& passActive, float& cursorBlink, ScreenState& currentScreen, bool& isLoggedIn, bool& isAdmin, char* currentUser)
 {
     Color textColor = darkMode ? RAYWHITE : BLACK;
     Color boxColor = darkMode ? Color{ 60, 60, 70, 255 } : LIGHTGRAY;
@@ -104,6 +106,7 @@ void DrawLoginScreen(bool darkMode, char* username, char* password, bool& userAc
                 if (found)
                 {
                     isLoggedIn = true;
+                    isAdmin = (strcmp(username, "admin") == 0);  // <-- ADMIN CHECK
                     strcpy(currentUser, username);
                     currentScreen = SCREEN_HOME;
                     errorCode = 0;
@@ -177,7 +180,7 @@ void DrawLoginScreen(bool darkMode, char* username, char* password, bool& userAc
 
     DrawRectangleRec(createAccBtn, boxColor);
     DrawText("Create Account", (int)createAccBtn.x + 70, (int)createAccBtn.y + 10, 20, textColor);
-    DrawText("Create Account", (int)createAccBtn.x + 70, (int)createAccBtn.y + 10, 20, textColor);
+    // Removed duplicate DrawText line that was in your original code
 }
 
 void DrawRegisterScreen(bool darkMode, char* username, char* password, char* confirm, bool& userActive, bool& passActive, bool& confirmActive, float& cursorBlink, ScreenState& currentScreen)

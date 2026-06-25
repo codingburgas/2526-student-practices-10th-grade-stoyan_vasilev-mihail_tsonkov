@@ -8,7 +8,9 @@ enum ScreenState
     SCREEN_MENU = 0,
     SCREEN_LOGIN,
     SCREEN_REGISTER,
-    SCREEN_HOME
+    SCREEN_HOME,
+    SCREEN_ADD_MOVIE,      // <-- NEW
+    SCREEN_REMOVE_MOVIE    // <-- NEW
 };
 
 struct EventInputState
